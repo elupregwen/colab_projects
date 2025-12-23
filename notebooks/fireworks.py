@@ -1,21 +1,77 @@
 import turtle
+import random
+import time
 
-# Set up the screen
+# Screen setup
 screen = turtle.Screen()
-screen.bgcolor("white")
-screen.title("Python Turtle Square")
+screen.bgcolor("black")
+screen.title("🎆 Realistic Fireworks Show 🎆")
+screen.tracer(0)
 
-# Initialize the turtle (pen)
-t = turtle.Turtle()
-t.pensize(4) # Make the line thicker
-t.color("blue") # Set the pen color
-t.speed(2) # Set the drawing speed (1 slowest, 10 fastest)
+# Rocket turtle
+rocket = turtle.Turtle()
+rocket.hideturtle()
+rocket.speed(0)
+rocket.width(3)
 
-# Draw a square using a loop
-for i in range(4):
-    t.forward(100) # Move forward by 100 steps
-    t.left(90) # Turn left by 90 degrees
+# Explosion turtle
+boom = turtle.Turtle()
+boom.hideturtle()
+boom.speed(0)
+boom.width(2)
 
-# Keep the window open until clicked
+colors = [
+    "#ff4d4d", "#ff9933", "#ffff66",
+    "#66ff66", "#66ccff", "#9966ff",
+    "#ff66cc", "white"
+]
+
+def launch_rocket(x):
+    rocket.color("white")
+    rocket.penup()
+    rocket.goto(x, -300)
+    rocket.setheading(90)
+    rocket.pendown()
+
+    peak = random.randint(50, 250)
+
+    for _ in range(30):
+        rocket.forward(10)
+        screen.update()
+        time.sleep(0.02)
+
+    rocket.clear()
+    return rocket.xcor(), rocket.ycor()
+
+def explode(x, y):
+    boom.penup()
+    boom.goto(x, y)
+    boom.pendown()
+
+    color = random.choice(colors)
+    boom.color(color)
+
+    particles = random.randint(25, 40)
+
+    for _ in range(particles):
+        boom.penup()
+        boom.goto(x, y)
+        boom.setheading(random.randint(0, 360))
+        boom.pendown()
+        boom.forward(random.randint(60, 120))
+
+    screen.update()
+    time.sleep(0.5)
+    boom.clear()
+
+def firework():
+    x = random.randint(-300, 300)
+    ex, ey = launch_rocket(x)
+    explode(ex, ey)
+
+# Fireworks show
+for _ in range(15):
+    firework()
+    time.sleep(0.3)
+
 turtle.done()
-

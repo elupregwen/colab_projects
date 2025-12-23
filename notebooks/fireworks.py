@@ -1,114 +1,176 @@
 import turtle
 import random
-import time
 import math
 
-# ---------------- SCREEN ----------------
+# Set up the screen (larger window for bigger display)
 screen = turtle.Screen()
-screen.setup(width=1.0, height=1.0)
+screen.setup(width=1000, height=700)  # Bigger window for a grander show
 screen.bgcolor("black")
-screen.title("🎆 Superb Fireworks Show 🎆")
-screen.tracer(0)
+screen.title("Epic Fireworks with Rocket (Turtle)")
+screen.tracer(0)  # Turn off animation for smoother updates
+turtle.colormode(255)  # Allow RGB values from 0-255
 
-# ---------------- TURTLES ----------------
-rocket = turtle.Turtle(visible=False)
-rocket.speed(0)
-rocket.width(3)
+# Create a turtle for drawing
+pen = turtle.Turtle()
+pen.hideturtle()
+pen.speed(0)
 
-particle = turtle.Turtle(visible=False)
-particle.speed(0)
-particle.width(2)
+# Particle class (bigger sizes, twinkling effect)
+class Particle:
+    def __init__(self, x, y, vx, vy, color, size, lifetime):
+        self.x = x
+        self.y = y
+        self.vx = vx
+        self.vy = vy
+        self.color = color
+        self.size = size
+        self.lifetime = lifetime
+        self.age = 0
+        self.twinkle = random.uniform(0.8, 1.2)  # For twinkling effect
 
-spark = turtle.Turtle(visible=False)
-spark.speed(0)
-spark.width(1)
+    def update(self):
+        self.x += self.vx
+        self.y += self.vy
+        self.vy -= 0.1  # Gravity (corrected to pull downward)
+        self.age += 1
+        # Shrink and twinkle
+        self.size = max(1, self.size * (1 - self.age / self.lifetime) * self.twinkle)
+        self.twinkle = random.uniform(0.8, 1.2)  # Random twinkle
 
-# ---------------- COLORS ----------------
-colors = [
-    "#ff4d4d", "#ff9933", "#ffff66",
-    "#66ff66", "#66ccff", "#9966ff",
-    "#ff66cc", "white"
-]
+    def draw(self):
+        if self.age < self.lifetime:
+            pen.penup()
+            pen.goto(self.x, self.y)
+            pen.dot(self.size, self.color)
 
-# ---------------- ROCKET LAUNCH ----------------
-def launch_rocket(x):
-    rocket.clear()
-    rocket.penup()
-    rocket.goto(x, -350)
-    rocket.setheading(90)
-    rocket.color("white")
-    rocket.pendown()
+# Smoke class (bigger, more lingering)
+class Smoke:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.vx = random.uniform(-0.5, 0.5)  # Slow drift
+        self.vy = random.uniform(-0.2, 0.2)
+        self.size = random.randint(3, 8)  # Bigger smoke
+        self.lifetime = random.randint(150, 300)  # Longer lasting
+        self.age = 0
+        self.color = (80, 80, 80)  # Darker gray smoke
 
-    peak = random.randint(120, 280)
+    def update(self):
+        self.x += self.vx
+        self.y += self.vy
+        self.age += 1
+        self.size = max(1, self.size * (1 - self.age / self.lifetime))
 
-    for _ in range(35):
-        rocket.forward(12)
-        # glowing trail
-        rocket.dot(4, "white")
-        screen.update()
-        time.sleep(0.015)
+    def draw(self):
+        if self.age < self.lifetime:
+            pen.penup()
+            pen.goto(self.x, self.y)
+            pen.dot(self.size, self.color)
 
-    rocket.clear()
-    return rocket.xcor(), rocket.ycor()
+# Rocket class (bigger, centered launches, corrected upward movement)
+class Rocket:
+    def __init__(self, x, y, target_y):
+        self.x = x
+        self.y = y
+        self.target_y = target_y
+        self.vy = 8  # Positive velocity for upward movement
+        self.smoke_trail = []  # Enhanced smoke trail
+        self.exploded = False
 
-# ---------------- EXPLOSION ----------------
-def explode(x, y):
-    particle.clear()
-    spark.clear()
+    def update(self):
+        if not self.exploded:
+            self.y += self.vy
+            # Add more smoke particles to trail
+            self.smoke_trail.append(Smoke(self.x, self.y))
+            if len(self.smoke_trail) > 20:  # Longer trail
+                self.smoke_trail.pop(0)
+            if self.y >= self.target_y:  # Corrected condition for upward movement
+                self.explode()
 
-    burst_color = random.choice(colors)
-    particle.color(burst_color)
-    spark.color("white")
+    def explode(self):
+        self.exploded = True
+        particles = []
+        num_particles = random.randint(100, 200)  # Way more particles for epic bursts
+        explosion_type = random.choice(["burst", "fountain", "star"])
+        for _ in range(num_particles):
+            if explosion_type == "burst":
+                angle = random.uniform(0, 2 * math.pi)
+                speed = random.uniform(2, 6)
+            elif explosion_type == "fountain":
+                angle = random.uniform(-math.pi/4, math.pi/4)  # Narrower upward
+                speed = random.uniform(1, 5)
+            else:  # Star
+                angle = random.uniform(0, 2 * math.pi)
+                speed = random.uniform(3, 8)  # Faster for starburst
+            vx = speed * math.cos(angle)
+            vy = speed * math.sin(angle)
+            color = (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))  # Brighter colors
+            size = random.randint(3, 10)  # Bigger particles
+            lifetime = random.randint(80, 150)
+            particles.append(Particle(self.x, self.y, vx, vy, color, size, lifetime))
+        return particles
 
-    particles = random.randint(35, 55)
-    angles = [random.uniform(0, 360) for _ in range(particles)]
-    speeds = [random.uniform(4, 8) for _ in range(particles)]
-    gravity = 0.15
+    def draw(self):
+        if not self.exploded:
+            pen.penup()
+            pen.goto(self.x, self.y)
+            pen.dot(8, "white")  # Bigger rocket head
+            # Draw smoke trail
+            for smoke in self.smoke_trail:
+                smoke.update()
+                smoke.draw()
 
-    positions = [(x, y)] * particles
+# Main simulation
+particles = []
+rockets = []
+smokes = []  # Global smoke list for lingering effects
 
-    for frame in range(35):
-        particle.clear()
-        spark.clear()
+def update():
+    global particles, rockets, smokes
+    
+    # Clear screen
+    pen.clear()
+    
+    # Launch new rockets frequently, centered in the window
+    if random.random() < 0.2 and len(rockets) < 10:  # Even more frequent, more rockets
+        # Centered launches: bias towards center (-100 to 100), but allow some spread
+        x = random.randint(-150, 150)  # Tighter center for focus
+        target_y = random.randint(50, 250)  # Higher bursts (adjusted for upward movement)
+        rockets.append(Rocket(x, -350, target_y))  # Launch from lower bottom
+    
+    # Update rockets
+    new_particles = []
+    for rocket in rockets[:]:
+        rocket.update()
+        if rocket.exploded:
+            new_particles.extend(rocket.explode())
+            rockets.remove(rocket)
+        else:
+            rocket.draw()
+    
+    # Update particles
+    particles.extend(new_particles)
+    for particle in particles[:]:
+        particle.update()
+        if particle.age >= particle.lifetime:
+            particles.remove(particle)
+        else:
+            particle.draw()
+    
+    # Update and draw lingering smokes
+    smokes.extend([smoke for rocket in rockets for smoke in rocket.smoke_trail if smoke not in smokes])
+    for smoke in smokes[:]:
+        smoke.update()
+        if smoke.age >= smoke.lifetime:
+            smokes.remove(smoke)
+        else:
+            smoke.draw()
+    
+    screen.update()
+    screen.ontimer(update, 40)  # Faster updates for smoother animation
 
-        for i in range(particles):
-            angle = math.radians(angles[i])
-            vx = speeds[i] * math.cos(angle)
-            vy = speeds[i] * math.sin(angle) - gravity * frame
+# Start the simulation
+update()
 
-            px = positions[i][0] + vx
-            py = positions[i][1] + vy
-            positions[i] = (px, py)
-
-            # explosion particles
-            particle.penup()
-            particle.goto(px, py)
-            particle.dot(5)
-
-            # sparkle effect
-            if random.random() > 0.7:
-                spark.penup()
-                spark.goto(px + random.randint(-2, 2), py)
-                spark.dot(3)
-
-        screen.update()
-        time.sleep(0.03)
-
-# ---------------- FIREWORK ----------------
-def firework():
-    x = random.randint(-450, 450)
-    ex, ey = launch_rocket(x)
-    explode(ex, ey)
-
-# ---------------- SHOW ----------------
-for _ in range(18):
-    # sometimes launch double rockets
-    if random.random() > 0.7:
-        firework()
-        firework()
-    else:
-        firework()
-
-    time.sleep(random.uniform(0.2, 0.5))
-
+# Keep the window open
 turtle.done()

@@ -6,7 +6,7 @@ import math
 screen = turtle.Screen()
 screen.setup(width=1000, height=700)  # Bigger window for a grander show
 screen.bgcolor("black")
-screen.title("Epic Fireworks with Rocket (Turtle)")
+screen.title("Fireworks Display - Enhanced Version")
 screen.tracer(0)  # Turn off animation for smoother updates
 turtle.colormode(255)  # Allow RGB values from 0-255
 

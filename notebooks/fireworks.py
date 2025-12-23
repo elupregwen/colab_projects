@@ -1,23 +1,21 @@
-# Save this as test_basic.py
-print("=" * 50)
-print("🎉 PYTHON BASIC TEST STARTING!")
-print("=" * 50)
+import turtle
 
-# Test 1: Basic output
-print("\n1️⃣ Basic print statement works!")
+# Set up the screen
+screen = turtle.Screen()
+screen.bgcolor("white")
+screen.title("Python Turtle Square")
 
-# Test 2: Simple calculation
-result = 5 * 5
-print(f"2️⃣ Simple math works: 5 * 5 = {result}")
+# Initialize the turtle (pen)
+t = turtle.Turtle()
+t.pensize(4) # Make the line thicker
+t.color("blue") # Set the pen color
+t.speed(2) # Set the drawing speed (1 slowest, 10 fastest)
 
-# Test 3: List operation
-my_list = ["Python", "is", "working!"]
-print(f"3️⃣ List operations work: {' '.join(my_list)}")
+# Draw a square using a loop
+for i in range(4):
+    t.forward(100) # Move forward by 100 steps
+    t.left(90) # Turn left by 90 degrees
 
-print("\n" + "=" * 50)
-print("✅ If you see all 3 tests above, Python is installed!")
-print("=" * 50)
-
-# Wait for user input before closing (Windows)
-input("\nPress Enter to exit...")
+# Keep the window open until clicked
+turtle.done()
 
